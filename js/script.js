@@ -5,11 +5,17 @@ const noteInput = document.querySelector("#note-content");
 const addNoteBtn = document.querySelector(".add-note");
 
 function showNotes() {
+    cleanNotes();
+
     getNotes().forEach((note) => {
         const noteElement = createNote(note.id, note.content, note.fixed);
 
         notesContainer.appendChild(noteElement);
     });
+}
+
+function cleanNotes() {
+    notesContainer.replaceChildren([])
 }
 
 function addNote () {
@@ -37,7 +43,7 @@ function generateId() {
     return Math.floor(Math.random() * 5000);
 }
 
-function createNote(id, content) {
+function createNote(id, content, fixed) {
 
     const element = document.createElement("div")
 
@@ -45,7 +51,7 @@ function createNote(id, content) {
 
     const textarea = document.createElement("textarea")
 
-    textarea.value = content
+    textarea.value = content;
 
     textarea.placeholder = "Adicione algum texto"
 
@@ -57,32 +63,52 @@ function createNote(id, content) {
 
     element.appendChild(pinIcon);
 
-    if(fixed) {
-    element.classList.add("fixed");
-     }
+    element.querySelector(".bi-pin").addEventListener("click", () => {
+        toggleFixNote(id);
+    })
+    const deleteIcon= document.createElement("i")
+
+    pinIcon.classList.add(...["bi", "bi-x-lg"])
+
+    element.appendChild(deleteIcon);
+
+    element.querySelector(".bi-pin").addEventListener("click", () => {
+        toggleFixNote(id);
+    })
+    const duplicateIcon = document.createElement("i")
+
+    pinIcon.classList.add(...["bi", "bi-file-earmark-plus"])
+
+    element.appendChild(duplicateIcon);
 
     element.querySelector(".bi-pin").addEventListener("click", () => {
         toggleFixNote(id);
     })
 
-    return element;
+    
+    if(fixed) {
+        element.classList.add("fixed");
+        }
 
 }
 
 function toggleFixNote (id) {
     const notes = getNotes()
 
-    const targetNote = notes.filter((note) => note.id === id)[0]
+    const targetNote = notes.filter((note) => note.id === id)[0];
 
     targetNote.fixed = !targetNote.fixed;
 
-    saveNotes(notes)
+    saveNotes(notes);
+    showNotes();
 }
 
 function getNotes() {
     const notes = JSON.parse(localStorage.getItem("notes") || "[]")
 
-    return notes;
+  const orderedNotes = notes.sort((a, b) => (a.fixed > b.fixed ? -1 : 1));
+
+    return orderedNotes;
 }
 
 function saveNotes (notes) {
