@@ -73,10 +73,11 @@ function createNote(id, content, fixed) {
 
     // Eventos do elemento
 
-        element.querySelector("textarea").addEventListener("keyup", () => {
+        element.querySelector("textarea").addEventListener("keyup", (e) => {
 
-            
+            const noteContent = e.target.value
 
+            updateNote(id, noteContent);
         })
 
     element.querySelector(".bi-pin").addEventListener("click", () => {
@@ -164,6 +165,78 @@ function copyNote(id) {
     saveNotes(notes);
 }
 
+function updateNote(id, newContent) {
+
+    const notes = getNotes();
+
+    const targetNote = notes.filter((note) => note.id === id)[0];
+
+    targetNote.content = newContent;
+    
+    saveNotes(notes);
+}
+
+function searchNotes(search) {
+
+    const searchResults = getNotes().filter((note) => note.content.includes(search))
+
+    if(search !== "") {
+
+        cleanNotes();
+
+        searchResults.forEach((note) => {
+            const noteElement = createNote(note.id, note.content);
+            notesContainer.appendChild(noteElement);
+        });
+
+        return;
+    }
+
+    cleanNotes()
+
+    showNotes();
+
+}
+
+function exportData() {
+
+    const notes = getNotes()
+
+    const csvString = [
+        ["ID", "Conteúdo", "fixado?"],
+        ...notes.map((note) => [note.id, note.content, note.fixed])
+    ].map((e) => e.join(",")).join("\n");
+    
+
+    const element = document.createElement("a");
+
+    element.href = "data:text/csv;charset=utf-8," + encodeURI(csvString);
+
+    element.target = "_blank"
+
+    element.download = "notes.csv"
+
+    element.click();
+}
+
 addNoteBtn.addEventListener("click", () => addNote())
+
+searchInput.addEventListener("keyup", (e) => {
+
+    const search = e.target.value;
+
+    searchNotes(search);
+
+})
+
+noteInput.addEventListener("keydown", (e) =>{
+    if(e.key === "Enter") {
+        addNote();
+    }
+})
+
+exportBtn.addEventListener("click", () => {
+    exportData();
+})
 
 showNotes();
